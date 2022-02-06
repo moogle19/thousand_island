@@ -3,6 +3,8 @@
 [![Build Status](https://github.com/mtrudel/thousand_island/workflows/Elixir%20CI/badge.svg)](https://github.com/mtrudel/thousand_island/actions)
 [![Docs](https://img.shields.io/badge/api-docs-green.svg?style=flat)](https://hexdocs.pm/thousand_island)
 [![Hex.pm](https://img.shields.io/hexpm/v/thousand_island.svg?style=flat&color=blue)](https://hex.pm/packages/thousand_island)
+
+
 [![Run in Livebook](https://livebook.dev/badge/v1/black.svg)](https://livebook.dev/run?url=https%3A%2F%2Fgithub.com%2Fmoogle19%2Fthousand_island%2Fblob%2Flivebook%2FREADME.livemd)
 
 Thousand Island is a modern, pure Elixir socket server, inspired heavily by
