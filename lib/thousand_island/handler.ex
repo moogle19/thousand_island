@@ -358,10 +358,19 @@ defmodule ThousandIsland.Handler do
       end
 
       @impl GenServer
+      def terminate(_reason, {nil, state}) do
+        error = "connection closed before socket was initialized"
+
+        :telemetry.execute([:handler, :error], %{
+          error: error
+        })
+
+        __MODULE__.handle_error(error, nil, state)
+      end
+
+      @impl GenServer
       def terminate({:shutdown, reason}, {socket, state}) do
-        if socket != nil do
-          ThousandIsland.Socket.close(socket)
-        end
+        ThousandIsland.Socket.close(socket)
 
         :telemetry.execute([:handler, :shutdown], %{reason: reason}, %{
           connection_id: socket.connection_id
@@ -380,9 +389,7 @@ defmodule ThousandIsland.Handler do
       end
 
       def terminate(reason, {socket, state}) do
-        if socket != nil do
-          ThousandIsland.Socket.close(socket)
-        end
+        ThousandIsland.Socket.close(socket)
 
         :telemetry.execute([:handler, :error], %{error: reason}, %{
           connection_id: socket.connection_id
