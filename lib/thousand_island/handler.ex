@@ -359,7 +359,9 @@ defmodule ThousandIsland.Handler do
 
       @impl GenServer
       def terminate({:shutdown, reason}, {socket, state}) do
-        ThousandIsland.Socket.close(socket)
+        if socket != nil do
+          ThousandIsland.Socket.close(socket)
+        end
 
         :telemetry.execute([:handler, :shutdown], %{reason: reason}, %{
           connection_id: socket.connection_id
@@ -378,7 +380,9 @@ defmodule ThousandIsland.Handler do
       end
 
       def terminate(reason, {socket, state}) do
-        ThousandIsland.Socket.close(socket)
+        if socket != nil do
+          ThousandIsland.Socket.close(socket)
+        end
 
         :telemetry.execute([:handler, :error], %{error: reason}, %{
           connection_id: socket.connection_id
