@@ -365,7 +365,7 @@ defmodule ThousandIsland.Handler do
           error: error
         })
 
-        {:stop, error, {socket, state}}
+        {:stop, error, {nil, state}}
       end
 
       @impl GenServer
