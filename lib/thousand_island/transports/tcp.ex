@@ -106,8 +106,9 @@ defmodule ThousandIsland.Transports.TCP do
 
   @impl Transport
   def peer_info(socket) do
-    {:ok, {ip, port}} = :inet.peername(socket)
-    %{address: ip, port: port, ssl_cert: nil}
+    with {:ok, {ip, port}} <- :inet.peername(socket) do
+      {:ok, %{address: ip, port: port, ssl_cert: nil}}
+    end
   end
 
   @impl Transport

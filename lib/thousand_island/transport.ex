@@ -15,11 +15,14 @@ defmodule ThousandIsland.Transport do
   @type socket() :: any()
 
   @typedoc "Information about an endpoint (either remote ('peer') or local"
-  @type socket_info() :: %{
-          address: :inet.ip_address() | :inet.local_address(),
-          port: :inet.port_number(),
-          ssl_cert: String.t() | nil
-        }
+  @type socket_info() ::
+          {:ok,
+           %{
+             address: :inet.ip_address() | :inet.local_address(),
+             port: :inet.port_number(),
+             ssl_cert: String.t() | nil
+           }}
+          | {:error, :inet.posix() | :ssl.reason()}
 
   @typedoc "Connection statistics for a given socket"
   @type socket_stats() :: {:ok, [{:inet.stat_option(), integer()}]} | {:error, :inet.posix()}

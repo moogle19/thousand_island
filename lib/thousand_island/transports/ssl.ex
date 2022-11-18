@@ -122,15 +122,15 @@ defmodule ThousandIsland.Transports.SSL do
 
   @impl Transport
   def peer_info(socket) do
-    {:ok, {ip, port}} = :ssl.peername(socket)
+    with {:ok, {ip, port}} <- :ssl.peername(socket) do
+      cert =
+        case :ssl.peercert(socket) do
+          {:ok, cert} -> cert
+          {:error, _} -> nil
+        end
 
-    cert =
-      case :ssl.peercert(socket) do
-        {:ok, cert} -> cert
-        {:error, _} -> nil
-      end
-
-    %{address: ip, port: port, ssl_cert: cert}
+      {:ok, %{address: ip, port: port, ssl_cert: cert}}
+    end
   end
 
   @impl Transport

@@ -299,21 +299,21 @@ defmodule ThousandIsland.Handler do
 
       @impl GenServer
       def handle_info({:thousand_island_ready, socket}, {_, state}) do
-        %{address: address, port: port} = ThousandIsland.Socket.peer_info(socket)
+        with %{address: address, port: port} <- ThousandIsland.Socket.peer_info(socket) do
+          :telemetry.execute([:handler, :start], %{}, %{
+            remote_address: address,
+            remote_port: port,
+            connection_id: socket.connection_id,
+            acceptor_id: socket.acceptor_id
+          })
 
-        :telemetry.execute([:handler, :start], %{}, %{
-          remote_address: address,
-          remote_port: port,
-          connection_id: socket.connection_id,
-          acceptor_id: socket.acceptor_id
-        })
+          case ThousandIsland.Socket.handshake(socket) do
+            {:ok, socket} ->
+              {:noreply, {socket, state}, {:continue, :handle_connection}}
 
-        case ThousandIsland.Socket.handshake(socket) do
-          {:ok, socket} ->
-            {:noreply, {socket, state}, {:continue, :handle_connection}}
-
-          {:error, reason} ->
-            {:stop, reason, {socket, state}}
+            {:error, reason} ->
+              {:stop, reason, {socket, state}}
+          end
         end
       end
 
