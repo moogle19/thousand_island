@@ -323,18 +323,20 @@ defmodule ThousandIsland.Handler do
 
       @impl GenServer
       def handle_info(
-            {:thousand_island_ready, raw_socket, server_config, acceptor_span, start_time},
+            {:thousand_island_ready, raw_socket,
+             %ThousandIsland.ServerConfig{transport_module: transport_module} = server_config,
+             acceptor_span, start_time},
             {nil, state}
           ) do
         {ip, port} =
-          case server_config.transport_module.peername(raw_socket) do
+          case transport_module.peername(raw_socket) do
             {:ok, remote_info} ->
               remote_info
 
             {:error, reason} ->
               # the socket has been prematurely closed by the client, we can't do anything with it
               # so we just close the socket, stop the GenServer with the error reason and move on.
-              _ = server_config.transport_module.close(raw_socket)
+              _ = transport_module.close(raw_socket)
               throw({:stop, {:shutdown, {:premature_conn_closing, reason}}, {raw_socket, state}})
           end
 
@@ -451,7 +453,7 @@ defmodule ThousandIsland.Handler do
               ThousandIsland.Socket.t(),
               reason :: :shutdown | :local_closed | term()
             ) :: :ok
-      defp do_socket_close(socket, reason) do
+      defp do_socket_close(%ThousandIsland.Socket{} = socket, reason) do
         measurements =
           case ThousandIsland.Socket.getstat(socket) do
             {:ok, stats} ->
@@ -471,7 +473,7 @@ defmodule ThousandIsland.Handler do
 
       # Dialyzer gets confused by handle_continuation being a defp and not a def
       @dialyzer {:no_match, handle_continuation: 2}
-      defp handle_continuation(continuation, socket) do
+      defp handle_continuation(continuation, %ThousandIsland.Socket{} = socket) do
         case continuation do
           {:continue, state} ->
             _ = ThousandIsland.Socket.setopts(socket, active: :once)

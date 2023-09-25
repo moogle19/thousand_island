@@ -24,19 +24,22 @@ defmodule ThousandIsland.Listener do
 
   @impl GenServer
   @spec init(ThousandIsland.ServerConfig.t()) :: {:ok, state} | {:stop, reason :: term}
-  def init(%ThousandIsland.ServerConfig{} = server_config) do
+  def init(%ThousandIsland.ServerConfig{
+        port: port,
+        transport_module: transport_module,
+        transport_options: transport_options
+      }) do
     with {:ok, listener_socket} <-
-           server_config.transport_module.listen(
-             server_config.port,
-             server_config.transport_options
+           transport_module.listen(
+             port,
+             transport_options
            ),
-         {:ok, {ip, port}} <-
-           server_config.transport_module.sockname(listener_socket) do
+         {:ok, {ip, port}} <- transport_module.sockname(listener_socket) do
       span_meta = %{
         local_address: ip,
         local_port: port,
-        transport_module: server_config.transport_module,
-        transport_options: server_config.transport_options
+        transport_module: transport_module,
+        transport_options: transport_options
       }
 
       listener_span = ThousandIsland.Telemetry.start_span(:listener, %{}, span_meta)
@@ -54,13 +57,13 @@ defmodule ThousandIsland.Listener do
           {:reply,
            ThousandIsland.Transport.socket_info()
            | {ThousandIsland.Transport.listener_socket(), ThousandIsland.Telemetry.t()}, state}
-  def handle_call(:listener_info, _from, state), do: {:reply, state.local_info, state}
+  def handle_call(:listener_info, _from, %{} = state), do: {:reply, state.local_info, state}
 
-  def handle_call(:acceptor_info, _from, state),
+  def handle_call(:acceptor_info, _from, %{} = state),
     do: {:reply, {state.listener_socket, state.listener_span}, state}
 
   @impl GenServer
   @spec terminate(reason, state) :: :ok
         when reason: :normal | :shutdown | {:shutdown, term} | term
-  def terminate(_reason, state), do: ThousandIsland.Telemetry.stop_span(state.listener_span)
+  def terminate(_reason, %{} = state), do: ThousandIsland.Telemetry.stop_span(state.listener_span)
 end
