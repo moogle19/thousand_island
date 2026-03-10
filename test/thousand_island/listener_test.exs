@@ -78,8 +78,7 @@ defmodule ThousandIsland.ListenerTest do
       assert {:ok, socket} = :gen_tcp.listen(@server_config.port, [])
       :gen_tcp.close(socket)
 
-      {:ok, %{listener_sockets: {socket}}} =
-        Listener.init(@server_config)
+      {:ok, %{listener_sockets: {socket}}} = Listener.init(@server_config)
 
       # Confirm the port is bound by asserting
       # that the port cannot be listened on,
@@ -123,8 +122,7 @@ defmodule ThousandIsland.ListenerTest do
     end
 
     test "an :acceptor_info call gives a reply with the listener socket and :listener_span" do
-      {:ok, %{listener_span: span, listener_sockets: {socket}}} =
-        Listener.init(@server_config)
+      {:ok, %{listener_span: span, listener_sockets: {socket}}} = Listener.init(@server_config)
 
       state = %{
         listener_sockets: {socket},
@@ -142,8 +140,7 @@ defmodule ThousandIsland.ListenerTest do
 
   describe "terminate/2" do
     test "emits telemetry event with expected timings" do
-      {:ok, %{listener_span: span, listener_sockets: {socket}}} =
-        Listener.init(@server_config)
+      {:ok, %{listener_span: span, listener_sockets: {socket}}} = Listener.init(@server_config)
 
       TelemetryHelpers.attach_all_events(__MODULE__)
 
@@ -185,7 +182,9 @@ defmodule ThousandIsland.ListenerTest do
       # Test with single socket first (always works)
       config = %ServerConfig{@server_config | num_listen_sockets: 1}
 
-      assert {:ok, %{listener_sockets: sockets, listener_span: span, num_listen_sockets: 1}} = Listener.init(config)
+      assert {:ok, %{listener_sockets: sockets, listener_span: span, num_listen_sockets: 1}} =
+               Listener.init(config)
+
       assert {socket} = sockets
 
       state = %{
