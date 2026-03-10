@@ -25,11 +25,11 @@ defmodule ThousandIsland.SocketReuseTest do
 
       case ThousandIsland.Listener.init(config) do
         {:ok, %{listener_sockets: sockets, local_info: {ip, port}}} ->
-          assert [{1, socket1}, {2, socket2}, {3, socket3}] = sockets
-          sockets = [socket1, socket2, socket3]
+          assert {socket1, socket2, socket3} = sockets
+          sockets_list = [socket1, socket2, socket3]
 
           # Verify all sockets are different
-          assert 3 == sockets |> Enum.uniq() |> length()
+          assert 3 == sockets_list |> Enum.uniq() |> length()
 
           # Verify all sockets bind to the same port
           assert {:ok, {^ip, ^port}} = :inet.sockname(socket1)
@@ -37,7 +37,7 @@ defmodule ThousandIsland.SocketReuseTest do
           assert {:ok, {^ip, ^port}} = :inet.sockname(socket3)
 
           # Close all sockets
-          for socket <- sockets, do: :gen_tcp.close(socket)
+          for socket <- sockets_list, do: :gen_tcp.close(socket)
 
         {:stop, :eaddrinuse} ->
           # Skip test on systems without SO_REUSEPORT support
