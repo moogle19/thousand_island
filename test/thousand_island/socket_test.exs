@@ -212,8 +212,8 @@ defmodule ThousandIsland.SocketTest do
         ])
         |> String.trim_trailing("]")
 
-      assert ^expected_prefix <> rest = to_string(resp)
-      assert rest =~ ~r/protocol/
+      assert String.starts_with?(to_string(resp), expected_prefix)
+      assert to_string(resp) =~ ~r/protocol/
 
       context.client_mod.close(client)
     end

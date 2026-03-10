@@ -4,7 +4,8 @@ defmodule ThousandIsland.Listener do
   use GenServer, restart: :transient
 
   @type state :: %{
-          listener_sockets: [{pos_integer(), ThousandIsland.Transport.listener_socket()}],
+          listener_sockets: tuple(),
+          num_listen_sockets: pos_integer(),
           listener_span: ThousandIsland.Telemetry.t(),
           local_info: ThousandIsland.Transport.socket_info()
         }
@@ -40,9 +41,13 @@ defmodule ThousandIsland.Listener do
 
         listener_span = ThousandIsland.Telemetry.start_span(:listener, %{}, span_metadata)
 
+        listener_sockets_tuple =
+          listener_sockets |> Enum.map(fn {_, socket} -> socket end) |> List.to_tuple()
+
         {:ok,
          %{
-           listener_sockets: listener_sockets,
+           listener_sockets: listener_sockets_tuple,
+           num_listen_sockets: server_config.num_listen_sockets,
            local_info: local_info,
            listener_span: listener_span
          }}
@@ -94,9 +99,8 @@ defmodule ThousandIsland.Listener do
   def handle_call(:listener_info, _from, state), do: {:reply, state.local_info, state}
 
   def handle_call({:acceptor_info, acceptor_id}, _from, state) do
-    num_listen_sockets = length(state.listener_sockets)
-    socket_id = rem(acceptor_id - 1, num_listen_sockets) + 1
-    {^socket_id, listener_socket} = List.keyfind(state.listener_sockets, socket_id, 0)
+    socket_index = rem(acceptor_id - 1, state.num_listen_sockets)
+    listener_socket = elem(state.listener_sockets, socket_index)
     {:reply, {listener_socket, state.listener_span}, state}
   end
 
