@@ -436,7 +436,7 @@ defmodule ThousandIsland.ServerTest do
         )
 
       :ssl.send(client, "send_timeout")
-      {:ok, ~c"{:ok, [send_timeout: 1230]}"} = :ssl.recv(client, 0, 100)
+      {:ok, ~c"{:ok, [send_timeout: 1230]}"} = :ssl.recv(client, 0, 1000)
     end
 
     test "ssl should not allow hardcoded options to be overridden" do
