@@ -555,14 +555,18 @@ defmodule ThousandIsland.Handler do
   defp cancel_read_timer(%{read_timer: nil} = socket), do: socket
 
   defp cancel_read_timer(%{read_timer: timer} = socket) do
-    _ = Process.cancel_timer(timer)
+    case Process.cancel_timer(timer) do
+      false ->
+        # Since we don't cancel timers until the final handle_continuation call in a callback, flush
+        # any :read_timeout message already delivered to the mailbox before we could cancel the timer
+        receive do
+          :read_timeout -> :ok
+        after
+          0 -> :ok
+        end
 
-    # Since we don't cancel timers until the final handle_continuation call in a callback, flush
-    # any :read_timeout message already delivered to the mailbox before we could cancel the timer
-    receive do
-      :read_timeout -> :ok
-    after
-      0 -> :ok
+      _remaining_ms ->
+        :ok
     end
 
     %{socket | read_timer: nil}
