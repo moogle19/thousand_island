@@ -164,7 +164,7 @@ defmodule ThousandIsland.Transports.SSL do
   end
 
   defp chunk_size(0, _sent, chunk_size), do: chunk_size
-  defp chunk_size(length, sent, chunk), do: min(length - sent, chunk)
+  defp chunk_size(length, sent, chunk), do: max(0, min(length - sent, chunk))
 
   @impl ThousandIsland.Transport
   @spec getopts(socket(), ThousandIsland.Transport.socket_get_options()) ::

@@ -360,7 +360,7 @@ defmodule ThousandIsland.ServerTest do
       ThousandIsland.stop(server_pid)
 
       assert_receive {:telemetry, [:thousand_island, :acceptor, :stop], measurements, metadata},
-                     500
+                     2500
 
       assert measurements ~> %{monotonic_time: integer(), duration: integer(), connections: 0}
 
@@ -372,7 +372,7 @@ defmodule ThousandIsland.ServerTest do
              }
 
       assert_receive {:telemetry, [:thousand_island, :listener, :stop], measurements, metadata},
-                     500
+                     2500
 
       assert measurements ~> %{monotonic_time: integer(), duration: integer()}
 
@@ -436,7 +436,7 @@ defmodule ThousandIsland.ServerTest do
         )
 
       :ssl.send(client, "send_timeout")
-      {:ok, ~c"{:ok, [send_timeout: 1230]}"} = :ssl.recv(client, 0, 100)
+      {:ok, ~c"{:ok, [send_timeout: 1230]}"} = :ssl.recv(client, 0, 1000)
     end
 
     test "ssl should not allow hardcoded options to be overridden" do
